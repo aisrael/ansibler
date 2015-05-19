@@ -41,7 +41,7 @@ task :simplecov do
   Rake::Task['test'].execute
 end
 
-task :default => :test
+task :default => :features
 
 require 'yard'
 YARD::Rake::YardocTask.new do |t|
