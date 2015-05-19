@@ -20,5 +20,7 @@ group :development do
 
   # Documentation
   gem 'rdoc', '~> 4.2.0'
-  gem 'yard'
+  gem 'yard', '~> 0.8.7'
+  gem 'redcarpet'
+
 end

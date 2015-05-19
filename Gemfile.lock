@@ -73,6 +73,7 @@ GEM
     rainbow (2.0.0)
     rake (10.4.2)
     rdoc (4.2.0)
+    redcarpet (3.2.3)
     rspec (3.2.0)
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
@@ -112,7 +113,8 @@ DEPENDENCIES
   cucumber (~> 2.0)
   jeweler (~> 2.0.1)
   rdoc (~> 4.2.0)
+  redcarpet
   rspec (~> 3.2)
   rubocop
   simplecov
-  yard
+  yard (~> 0.8.7)
