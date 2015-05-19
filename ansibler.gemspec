@@ -19,15 +19,13 @@ Gem::Specification.new do |s|
     "README.md"
   ]
   s.files = [
-    ".ruby-gemset",
-    ".ruby-version",
-    ".yardopts",
     "Gemfile",
     "Gemfile.lock",
     "LICENSE.txt",
     "README.md",
     "Rakefile",
     "VERSION",
+    "ansibler.gemspec",
     "features/inventory.features",
     "features/step_definitions/inventory_steps.rb",
     "features/support/env.rb",
@@ -38,6 +36,7 @@ Gem::Specification.new do |s|
   s.licenses = ["MIT"]
   s.rubygems_version = "2.4.6"
   s.summary = "Ruby gem for reading and writing Ansible files"
+  s.test_files = ["features/inventory.features", "features/step_definitions/inventory_steps.rb", "features/support/env.rb"]
 
   if s.respond_to? :specification_version then
     s.specification_version = 4
