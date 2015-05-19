@@ -15,10 +15,11 @@ module Ansible
           when line =~ /^\s*[^\[]\S+\s*(\S+=\S+\s*)*$/
             host_name, *rest = line.split
             vars = Hash[rest.map {|s| s.split('=')}]
-            host = Host.new host_name, vars
             if last_group
+              host = inventory.hosts.find {|h| h.name == host_name} || Host.new(host_name, vars)
               last_group.hosts << host
             else
+              host = Host.new host_name, vars
               inventory.hosts << host
             end
 
