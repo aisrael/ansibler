@@ -9,7 +9,6 @@ group :development do
   gem 'jeweler', '~> 2.0.1'
 
   # Use cucumber & rspec for tests
-  gem 'shoulda', '>= 0'
   gem 'cucumber', '~> 2.0'
   gem 'rspec', '~> 3.2'
 

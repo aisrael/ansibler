@@ -1,0 +1,13 @@
+Feature: Inventory
+  In order to read and write Ansible inventory files
+
+  Scenario: read a simple inventory file
+    Given an Ansible inventory file containing
+      """
+      ip-172-31-6-85 ansible_ssh_host=172.31.6.85 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
+      ip-172-31-3-134 ansible_ssh_host=172.31.3.134 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
+      """
+    When we read the file using Ansible::Inventory.read_file
+    Then the hosts.count should be 2
+    And the hosts.first.name should be "ip-172-31-6-85"
+    And the hosts.last.vars['ansible_ssh_user'] should be "ubuntu"
