@@ -8,7 +8,10 @@ Given an `inventory_file` that contains:
 
 ```
 ip-172-31-6-85
-ip-172-31-3-134 ansible_ssh_host=172.31.3.134 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
+ip-172-31-3-134 ansible_ssh_host=172.31.3.134 ansible_ssh_user=ubuntu
+
+[mysql]
+ip-172-31-3-134
 ```
 
 Then
@@ -17,8 +20,11 @@ Then
 inventory = Ansible::Inventory.read_file('inventory_file')
 inventory.hosts.count # => 2
 inventory.hosts.first.name # => "ip-172-31-6-85"
-inventory.hosts.last.vars.count # => 3
-inventory.hosts.last.vars['ansible_ssh_user'] # => "ubuntu"
+inventory.hosts.last.vars.count # => 2
+inventory.hosts.last.vars['ansible_ssh_host'] # => "172.31.3.134"
+inventory.groups.count # => 1
+inventory.groups.first.name # => "mysql"
+inventory.groups.first.hosts.first.vars['ansible_ssh_user'] # => "ubuntu"
 ```
 
 ## Contributing to ansibler
