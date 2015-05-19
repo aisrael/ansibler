@@ -8,9 +8,9 @@ Feature: Inventory
       ip-172-31-3-134
       """
     When we read the file using Ansible::Inventory.read_file
-    Then the hosts.count should be 2
-    And the hosts.first.name should be "ip-172-31-6-85"
-    And the hosts.last.name should be "ip-172-31-3-134"
+    Then `hosts.count` should be 2
+    And `hosts.first.name` should be "ip-172-31-6-85"
+    And `hosts.last.name` should be "ip-172-31-3-134"
 
   Scenario: read an inventory file with host variables
     Given an Ansible inventory file containing
@@ -19,7 +19,21 @@ Feature: Inventory
       ip-172-31-3-134 ansible_ssh_host=172.31.3.134 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
       """
     When we read the file using Ansible::Inventory.read_file
-    Then the hosts.count should be 2
-    And the hosts.first.name should be "ip-172-31-6-85"
-    And the hosts.first.vars['ansible_ssh_private_key_file'] should be "aws_private_key.pem"
-    And the hosts.last.vars['ansible_ssh_user'] should be "ubuntu"
+    And `hosts.first.name` should be "ip-172-31-6-85"
+    And `hosts.first.vars['ansible_ssh_private_key_file']` should be "aws_private_key.pem"
+    And `hosts.last.vars['ansible_ssh_user']` should be "ubuntu"
+
+  Scenario: read an inventory file with hosts and groups
+    Given an Ansible inventory file containing
+      """
+      ip-172-31-6-85
+      ip-172-31-3-134 ansible_ssh_host=172.31.3.134 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
+
+      [mysql]
+      ip-172-31-3-134
+      """
+    When we read the file using Ansible::Inventory.read_file
+    Then `groups.count` should be 1
+    And the first group's name should be "mysql"
+    And the first group should have 1 host
+    And `groups.first.hosts.first.name` should be "ip-172-31-3-134"
