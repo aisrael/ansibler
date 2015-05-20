@@ -17,8 +17,7 @@ module Ansible
               last_group = inventory.groups.find { |g| g.name == actual_group_name }
               last_group ||= inventory.groups.add(actual_group_name)
             else
-              last_group = Group.new group_name
-              inventory.groups << last_group
+              last_group = inventory.groups.add(group_name)
             end
           when line =~ /^\s*[^\[]\S+\s*(\S+=\S+\s*)*$/
             host_name, *rest = line.split
@@ -31,8 +30,7 @@ module Ansible
                 host = inventory.hosts.find {|h| h.name == host_name} || Host.new(host_name, vars)
                 last_group.hosts << host
               else
-                host = Host.new host_name, vars
-                inventory.hosts << host
+                inventory.hosts.add host_name, vars
               end
             end
           else
