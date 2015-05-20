@@ -6,23 +6,35 @@ module Ansible
       def read_file(file)
         inventory = Inventory.new
         last_group = nil
+        in_vars = false
         File.foreach(file) do |line|
           case
           when line =~ /^\[\S+\]$/
             group_name = line[/^\[(\S+)\]$/, 1]
-            last_group = Group.new group_name
-            inventory.groups << last_group
+            in_vars = group_name.end_with?(':vars')
+            if in_vars
+              actual_group_name = group_name[0, group_name.index(':')]
+              last_group = inventory.groups.find { |g| g.name == actual_group_name }
+              last_group ||= inventory.groups.add(actual_group_name)
+            else
+              last_group = inventory.groups.add(group_name)
+            end
           when line =~ /^\s*[^\[]\S+\s*(\S+=\S+\s*)*$/
             host_name, *rest = line.split
-            vars = Hash[rest.map {|s| s.split('=')}]
-            if last_group
-              host = inventory.hosts.find {|h| h.name == host_name} || Host.new(host_name, vars)
-              last_group.hosts << host
+            if in_vars && host_name.index('=') && rest.empty?
+              k, v = host_name.split('=')
+              last_group.vars[k] = v
             else
-              host = Host.new host_name, vars
-              inventory.hosts << host
+              vars = Hash[rest.map {|s| s.split('=')}]
+              if last_group
+                host = inventory.hosts.find {|h| h.name == host_name} || Host.new(host_name, vars)
+                last_group.hosts << host
+              else
+                inventory.hosts.add host_name, vars
+              end
             end
-
+          else
+            puts line
           end
         end
         inventory
@@ -32,7 +44,25 @@ module Ansible
     def write_file(file)
       File.open(file, 'w') do |f|
         hosts.each {|host|
-          f.printf ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
+          f.puts ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
+        }
+        groups.each {|group|
+          f.puts
+          f.puts "[#{group.name}]"
+          group.hosts.each {|host|
+            if hosts.find {|h| h == host }
+              f.puts host.name
+            else
+              f.puts ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
+            end
+          }
+          unless group.vars.empty?
+            f.puts
+            f.puts "[#{group.name}:vars]"
+            group.vars.each {|k, v|
+              f.puts "#{k}=#{v}"
+            }
+          end
         }
       end
     end
@@ -42,7 +72,7 @@ module Ansible
 
     def initialize
       @hosts = Host::Collection.new
-      @groups = []
+      @groups = Group::Collection.new
     end
 
     class Host < Struct.new :name, :vars
@@ -51,8 +81,14 @@ module Ansible
         self.vars = {} unless vars
       end
       class Collection < Array
-        def add(name, vars = {})
-          self << Host.new(name, vars)
+        def add(*args)
+          host = if args.first.is_a?(Host)
+            args.first
+          else
+            Host.new(*args)
+          end
+          self << host
+          host
         end
       end
     end
@@ -60,8 +96,14 @@ module Ansible
     class Group < Struct.new :name, :hosts, :vars
       def initialize(*args)
         super
-        self.hosts = [] unless hosts
+        self.hosts = Host::Collection.new unless hosts
         self.vars = {} unless vars
+      end
+      class Collection < Array
+        def add(*args)
+          self << group = Group.new(*args)
+          group
+        end
       end
     end
   end
