@@ -7,21 +7,25 @@ module Ansible
         inventory = Inventory.new
         last_group = nil
         in_vars = false
+        in_children = false
         File.foreach(file) do |line|
           case
-          when line =~ /^\[\S+\]$/
+          # [group:vars] or [group:chidren]
+          when line =~ /^\[\S+:(vars|children)\]$/
+            group_name, vars_or_children = line[/^\[(\S+)\]$/, 1].split(':')
+            in_vars = vars_or_children == 'vars'
+            in_children = vars_or_children == 'children'
+            last_group = inventory.groups[group_name] || inventory.groups.add(group_name)
+          # [group]
+          when line =~ /^\[[^:]+\]$/
             group_name = line[/^\[(\S+)\]$/, 1]
-            in_vars = group_name.end_with?(':vars')
-            if in_vars
-              actual_group_name = group_name[0, group_name.index(':')]
-              last_group = inventory.groups.find { |g| g.name == actual_group_name }
-              last_group ||= inventory.groups.add(actual_group_name)
-            else
-              last_group = inventory.groups.add(group_name)
-            end
+            last_group = inventory.groups.add(group_name)
           when line =~ /^\s*[^\[]\S+\s*(\S+=\S+\s*)*$/
             host_name, *rest = line.split
-            if in_vars && host_name.index('=') && rest.empty?
+            if in_children && rest.empty?
+              child_group = inventory.groups[host_name] || inventory.groups.add(host_name)
+              last_group.children << child_group.name
+            elsif in_vars && host_name.index('=') && rest.empty?
               k, v = host_name.split('=')
               last_group.vars[k] = v
             else
@@ -93,16 +97,20 @@ module Ansible
       end
     end
 
-    class Group < Struct.new :name, :hosts, :vars
+    class Group < Struct.new :name, :hosts, :vars, :children
       def initialize(*args)
         super
         self.hosts = Host::Collection.new unless hosts
         self.vars = {} unless vars
+        self.children = []
       end
       class Collection < Array
         def add(*args)
           self << group = Group.new(*args)
           group
+        end
+        def [](name)
+          find {|group| group.name == name}
         end
       end
     end

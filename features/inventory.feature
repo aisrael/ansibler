@@ -59,6 +59,24 @@ Feature: Inventory
     And `groups.first.vars.keys.first` should be "mysql_root_password"
     And `groups.first.vars['mysql_user_name']` should be "mysql"
 
+  Scenario: read an inventory file with group children
+    Given an Ansible inventory file containing:
+      """
+      ip-172-31-6-85
+
+      [mysql]
+      ip-172-31-6-85
+
+      [databases:children]
+      mysql
+      """
+    When we read the Ansible inventory file using Ansible::Inventory.read_file
+    Then `groups.count` should be 2
+    And the first group's name should be "mysql"
+    And the last group's name should be "databases"
+    And `groups['databases'].children.count` should be 1
+    And `groups['databases'].children.first` should be "mysql"
+
   Scenario: write an inventory file using Ansible::Inventory methods
     Given the following code snippet:
       """
