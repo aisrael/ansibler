@@ -66,6 +66,7 @@ Feature: Inventory
       host = inventory.hosts.add 'ip-172-31-3-134', ansible_ssh_host: '172.31.3.134'
       mysql_group = inventory.groups.add 'mysql'
       mysql_group.hosts.add host
+      mysql_group.vars['mysql_root_password'] = 'secret'
       inventory.write_file('ansible_inventory')
       """
     Then the file "ansible_inventory" should contain:
@@ -74,4 +75,7 @@ Feature: Inventory
 
       [mysql]
       ip-172-31-3-134
+
+      [mysql:vars]
+      mysql_root_password=secret
       """

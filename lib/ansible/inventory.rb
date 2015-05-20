@@ -58,6 +58,13 @@ module Ansible
               f.puts ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
             end
           }
+          unless group.vars.empty?
+            f.puts
+            f.puts "[#{group.name}:vars]"
+            group.vars.each {|k, v|
+              f.puts "#{k}=#{v}"
+            }
+          end
         }
       end
     end
