@@ -27,6 +27,10 @@ inventory.groups.first.name # => "mysql"
 inventory.groups.first.hosts.first.vars['ansible_ssh_user'] # => "ubuntu"
 ```
 
+## Documentation
+
+Full documentation is available [here](https://www.relishapp.com/aisrael/ansibler/docs).
+
 ## Contributing to ansibler
  
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
