@@ -85,6 +85,7 @@ Feature: Inventory
       mysql_group = inventory.groups.add 'mysql'
       mysql_group.hosts.add host
       mysql_group.vars['mysql_root_password'] = 'secret'
+      inventory.groups.add('databases').children << 'mysql'
       inventory.write_file('ansible_inventory')
       """
     Then the file "ansible_inventory" should contain:
@@ -96,4 +97,7 @@ Feature: Inventory
 
       [mysql:vars]
       mysql_root_password=secret
+
+      [databases:children]
+      mysql
       """

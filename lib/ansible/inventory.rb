@@ -51,21 +51,28 @@ module Ansible
           f.puts ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
         }
         groups.each {|group|
-          f.puts
-          f.puts "[#{group.name}]"
-          group.hosts.each {|host|
-            if hosts.find {|h| h == host }
-              f.puts host.name
-            else
-              f.puts ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
-            end
-          }
+          unless group.hosts.empty?
+            f.puts
+            f.puts "[#{group.name}]"
+            group.hosts.each {|host|
+              if hosts.find {|h| h == host }
+                f.puts host.name
+              else
+                f.puts ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
+              end
+            }
+          end
           unless group.vars.empty?
             f.puts
             f.puts "[#{group.name}:vars]"
             group.vars.each {|k, v|
               f.puts "#{k}=#{v}"
             }
+          end
+          unless group.children.empty?
+            f.puts
+            f.puts "[#{group.name}:children]"
+            group.children.each {|s| f.puts s}
           end
         }
       end
