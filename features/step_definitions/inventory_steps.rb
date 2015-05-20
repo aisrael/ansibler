@@ -29,7 +29,7 @@ end
 
 Then(/^the (first|last) (\S+) should have (\d+) (\S+)$/) do |first_or_last, collection, n, sub_collection|
   steps %Q{
-    Then `#{collection}s.#{first_or_last}.#{sub_collection}s.count` should be #{n}
+    Then `#{collection}s.#{first_or_last}.#{sub_collection.pluralize}.count` should be #{n}
   }
 end
 

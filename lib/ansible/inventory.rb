@@ -6,23 +6,37 @@ module Ansible
       def read_file(file)
         inventory = Inventory.new
         last_group = nil
+        in_vars = false
         File.foreach(file) do |line|
           case
           when line =~ /^\[\S+\]$/
             group_name = line[/^\[(\S+)\]$/, 1]
-            last_group = Group.new group_name
-            inventory.groups << last_group
+            in_vars = group_name.end_with?(':vars')
+            if in_vars
+              actual_group_name = group_name[0, group_name.index(':')]
+              last_group = inventory.groups.find { |g| g.name == actual_group_name }
+              last_group ||= inventory.groups.add(actual_group_name)
+            else
+              last_group = Group.new group_name
+              inventory.groups << last_group
+            end
           when line =~ /^\s*[^\[]\S+\s*(\S+=\S+\s*)*$/
             host_name, *rest = line.split
-            vars = Hash[rest.map {|s| s.split('=')}]
-            if last_group
-              host = inventory.hosts.find {|h| h.name == host_name} || Host.new(host_name, vars)
-              last_group.hosts << host
+            if in_vars && host_name.index('=') && rest.empty?
+              k, v = host_name.split('=')
+              last_group.vars[k] = v
             else
-              host = Host.new host_name, vars
-              inventory.hosts << host
+              vars = Hash[rest.map {|s| s.split('=')}]
+              if last_group
+                host = inventory.hosts.find {|h| h.name == host_name} || Host.new(host_name, vars)
+                last_group.hosts << host
+              else
+                host = Host.new host_name, vars
+                inventory.hosts << host
+              end
             end
-
+          else
+            puts line
           end
         end
         inventory

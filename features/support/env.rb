@@ -3,4 +3,5 @@ $: << File.expand_path(File.join('..', '..', '..', 'lib'), __FILE__)
 
 require 'ansibler'
 
+require 'active_support/all'
 require 'aruba/cucumber'
