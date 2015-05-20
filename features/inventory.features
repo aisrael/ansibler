@@ -2,7 +2,7 @@ Feature: Inventory
   In order to read and write Ansible inventory files
 
   Scenario: read a simple inventory file
-    Given an Ansible inventory file containing
+    Given an Ansible inventory file containing:
       """
       ip-172-31-6-85
       ip-172-31-3-134
@@ -13,7 +13,7 @@ Feature: Inventory
     And `hosts.last.name` should be "ip-172-31-3-134"
 
   Scenario: read an inventory file with host variables
-    Given an Ansible inventory file containing
+    Given an Ansible inventory file containing:
       """
       ip-172-31-6-85 ansible_ssh_host=172.31.6.85 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
       ip-172-31-3-134 ansible_ssh_host=172.31.3.134 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
@@ -24,7 +24,7 @@ Feature: Inventory
     And `hosts.last.vars['ansible_ssh_user']` should be "ubuntu"
 
   Scenario: read an inventory file with hosts and groups
-    Given an Ansible inventory file containing
+    Given an Ansible inventory file containing:
       """
       ip-172-31-6-85
       ip-172-31-3-134 ansible_ssh_host=172.31.3.134 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
