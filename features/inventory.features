@@ -43,10 +43,15 @@ Feature: Inventory
     Given the following code snippet:
       """
       inventory = Ansible::Inventory.new
-      inventory.hosts.add 'ip-172-31-3-134', ansible_ssh_host: '172.31.3.134'
+      host = inventory.hosts.add 'ip-172-31-3-134', ansible_ssh_host: '172.31.3.134'
+      mysql_group = inventory.groups.add 'mysql'
+      mysql_group.hosts.add host
       inventory.write_file('ansible_inventory')
       """
     Then the file "ansible_inventory" should contain:
       """
       ip-172-31-3-134 ansible_ssh_host=172.31.3.134
+
+      [mysql]
+      ip-172-31-3-134
       """

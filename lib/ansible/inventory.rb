@@ -32,7 +32,18 @@ module Ansible
     def write_file(file)
       File.open(file, 'w') do |f|
         hosts.each {|host|
-          f.printf ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
+          f.puts ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
+        }
+        groups.each {|group|
+          f.puts
+          f.puts "[#{group.name}]"
+          group.hosts.each {|host|
+            if hosts.find {|h| h == host }
+              f.puts host.name
+            else
+              f.puts ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
+            end
+          }
         }
       end
     end
@@ -42,7 +53,7 @@ module Ansible
 
     def initialize
       @hosts = Host::Collection.new
-      @groups = []
+      @groups = Group::Collection.new
     end
 
     class Host < Struct.new :name, :vars
@@ -51,8 +62,14 @@ module Ansible
         self.vars = {} unless vars
       end
       class Collection < Array
-        def add(name, vars = {})
-          self << Host.new(name, vars)
+        def add(*args)
+          host = if args.first.is_a?(Host)
+            args.first
+          else
+            Host.new(*args)
+          end
+          self << host
+          host
         end
       end
     end
@@ -60,8 +77,14 @@ module Ansible
     class Group < Struct.new :name, :hosts, :vars
       def initialize(*args)
         super
-        self.hosts = [] unless hosts
+        self.hosts = Host::Collection.new unless hosts
         self.vars = {} unless vars
+      end
+      class Collection < Array
+        def add(*args)
+          self << group = Group.new(*args)
+          group
+        end
       end
     end
   end
