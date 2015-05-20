@@ -21,7 +21,11 @@ Jeweler::Tasks.new do |gem|
   gem.description = 'ansibler is a Ruby gem that provides utility classes for modeling, reading and writing Ansible inventory and playbook files.'
   gem.email = 'aisrael@gmail.com'
   gem.authors = ['Alistair A. Israel']
+
   # dependencies defined in Gemfile
+
+  gem.files             = `git ls-files`.split("\n").delete_if {|f| f.start_with?('.')}
+  gem.test_files        = `git ls-files -- {test,spec,features}/*`.split("\n")
 end
 Jeweler::RubygemsDotOrgTasks.new
 
@@ -37,7 +41,7 @@ task :simplecov do
   Rake::Task['test'].execute
 end
 
-task :default => :test
+task :default => :features
 
 require 'yard'
 YARD::Rake::YardocTask.new do |t|

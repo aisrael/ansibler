@@ -9,8 +9,10 @@ group :development do
   gem 'jeweler', '~> 2.0.1'
 
   # Use cucumber & rspec for tests
-  gem 'cucumber', '~> 2.0'
   gem 'rspec', '~> 3.2'
+  gem 'cucumber', '~> 2.0'
+  # https://github.com/cucumber/aruba
+  gem 'aruba', '0.6.2'
 
   # Code coverage using simplecov
   gem 'simplecov', '>= 0'
@@ -20,7 +22,7 @@ group :development do
 
   # Documentation
   gem 'rdoc', '~> 4.2.0'
-  gem 'yard', '~> 0.8.7'
+  gem 'yard', '~> 0.8.7', require: false
   gem 'redcarpet'
 
 end

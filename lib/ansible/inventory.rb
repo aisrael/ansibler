@@ -29,11 +29,19 @@ module Ansible
       end
     end
 
+    def write_file(file)
+      File.open(file, 'w') do |f|
+        hosts.each {|host|
+          f.printf ([host.name] + host.vars.map {|k, v| "#{k}=#{v}"}).join(' ')
+        }
+      end
+    end
+
     attr_reader :hosts
     attr_reader :groups
 
     def initialize
-      @hosts = []
+      @hosts = Host::Collection.new
       @groups = []
     end
 
@@ -41,6 +49,11 @@ module Ansible
       def initialize(*args)
         super
         self.vars = {} unless vars
+      end
+      class Collection < Array
+        def add(name, vars = {})
+          self << Host.new(name, vars)
+        end
       end
     end
 
