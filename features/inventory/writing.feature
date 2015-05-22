@@ -36,3 +36,20 @@ Feature: Inventory Writing
       @ansible_inventory.hosts.add 'host1', ansible_ssh_user: 'ubuntu', ansible_ssh_host: '172.31.3.134'
       """
     Then there should be 1 host
+
+  Scenario: when removing a host from the global hosts, remove it from all groups
+    Given the following code snippet:
+      """ruby
+      @ansible_inventory = Ansible::Inventory.new
+      @ansible_inventory.hosts.add 'host1'
+      @ansible_inventory.hosts.add 'host2'
+      mysql_group = @ansible_inventory.groups.add 'mysql'
+      mysql_group.hosts.add 'host1', ansible_ssh_user: 'ubuntu', ansible_ssh_host: '172.31.3.134'
+      other_group = @ansible_inventory.groups.add 'other'
+      other_group.hosts.add 'host1'
+      other_group.hosts.add 'host2'
+      @ansible_inventory.hosts.remove 'host1'
+      """
+    Then there should be 1 host
+    And the first group should have 0 hosts
+    And the last group should have 1 host

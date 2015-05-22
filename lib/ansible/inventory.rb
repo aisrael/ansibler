@@ -84,7 +84,7 @@ module Ansible
     attr_reader :groups
 
     def initialize
-      @hosts = Host::Collection.new
+      @hosts = InventoryHostCollection.new(self)
       @groups = Group::Collection.new
     end
 
@@ -111,6 +111,15 @@ module Ansible
             host
           end
         end
+        def remove(host_or_name)
+          host = if host_or_name.is_a?(Host)
+            args.first
+          elsif host_or_name.is_a?(String)
+            self[host_or_name]
+          end
+          return unless host
+          self.delete host
+        end
         def [](name)
           find {|host| host.name == name}
         end
@@ -134,6 +143,29 @@ module Ansible
         end
       end
     end
+
+    def with_all_groups(&block)
+      groups.each do |group|
+        yield group
+      end
+    end
+
+    private
+
+    class InventoryHostCollection < Host::Collection
+      def initialize(inventory)
+        @inventory = inventory
+      end
+      def remove_with_globals(host_or_name)
+        if host = remove_without_globals(host_or_name)
+          @inventory.with_all_groups do |group|
+            group.hosts.remove host.name
+          end
+        end
+      end
+      alias_method_chain :remove, :globals
+    end
+
   end
 
 end
