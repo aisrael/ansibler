@@ -3,7 +3,7 @@ Feature: Inventory Writing
 
   Scenario: write an inventory file using Ansible::Inventory methods
     Given the following code snippet:
-      """
+      """ruby
       inventory = Ansible::Inventory.new
       host = inventory.hosts.add 'host1', ansible_ssh_host: '172.31.3.134'
       mysql_group = inventory.groups.add 'mysql'
@@ -14,7 +14,7 @@ Feature: Inventory Writing
       inventory.write_file('ansible_inventory')
       """
     Then the file "ansible_inventory" should contain:
-      """
+      """ini
       host1 ansible_ssh_host=172.31.3.134
 
       [mysql]
