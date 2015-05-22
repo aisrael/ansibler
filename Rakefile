@@ -21,6 +21,7 @@ Jeweler::Tasks.new do |gem|
   gem.description = 'ansibler is a Ruby gem that provides utility classes for modeling, reading and writing Ansible inventory and playbook files.'
   gem.email = 'aisrael@gmail.com'
   gem.authors = ['Alistair A. Israel']
+  gem.required_ruby_version = '>= 1.9'
 
   # dependencies defined in Gemfile
 
