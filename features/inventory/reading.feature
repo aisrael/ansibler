@@ -4,6 +4,7 @@ Feature: Inventory Reading
   Scenario: read a simple inventory file
     Given an Ansible inventory file containing:
       """
+      # comments are ignored
       host1
       host2
       """
