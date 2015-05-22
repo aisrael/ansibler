@@ -51,5 +51,5 @@ Feature: Inventory Writing
       @ansible_inventory.hosts.remove 'host1'
       """
     Then there should be 1 host
-    And the first group should have 0 hosts
-    And the last group should have 1 host
+    And the "mysql" group should have 0 hosts
+    And the "other" group should have 1 host

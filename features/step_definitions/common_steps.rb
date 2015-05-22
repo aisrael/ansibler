@@ -26,15 +26,23 @@ Then(/^`(\S+)` should be `"(\S+)"`$/) do |something, expected|
 end
 
 Then(/^the (first|last) (\S+)'s (\S+) should be `"([^"]*)"`$/) do |first_or_last, collection, attribute, expected|
-  steps %Q{
-    Then `#{collection}s.#{first_or_last}.#{attribute}` should be `\"#{expected}\"`
-  }
+  step %Q{`#{collection.pluralize}.#{first_or_last}.#{attribute}` should be `\"#{expected}\"`}
+end
+
+Then(/^the "(\S+)" (\S+)'s `.([^`]+)` should be `"([^"]*)"`$/) do |element_name, collection, attribute, expected|
+  step %Q{`#{collection.pluralize}['#{element_name}'].#{attribute}` should be `\"#{expected}\"`}
+end
+
+Then(/^the "(\S+)" (\S+)'s ([^`]\S*) should be `"([^"]*)"`$/) do |element_name, collection, attribute, expected|
+  step %Q{the "#{element_name}" #{collection}'s `.#{attribute}` should be `"#{expected}"`'}
 end
 
 Then(/^the (first|last) (\S+) should have (\d+) (\S+)$/) do |first_or_last, collection, n, sub_collection|
-  steps %Q{
-    Then `#{collection}s.#{first_or_last}.#{sub_collection.pluralize}.count` should be #{n}
-  }
+  step %Q{`#{collection.pluralize}.#{first_or_last}.#{sub_collection.pluralize}.count` should be #{n}}
+end
+
+Then(/^the "(\S+)" (\S+) should have (\d+) (\S+)$/) do |element_name, collection, n, sub_collection|
+  step %Q{`#{collection.pluralize}['#{element_name}'].#{sub_collection.pluralize}.count` should be #{n}}
 end
 
 def in_dir(dir, &block)
