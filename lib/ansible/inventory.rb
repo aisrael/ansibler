@@ -10,6 +10,8 @@ module Ansible
         in_children = false
         File.foreach(file) do |line|
           case
+          when line =~ /^\s*#/
+            next
           # [group:vars] or [group:chidren]
           when line =~ /^\[\S+:(vars|children)\]$/
             group_name, vars_or_children = line[/^\[(\S+)\]$/, 1].split(':')

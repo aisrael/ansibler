@@ -32,7 +32,7 @@ Jeweler::RubygemsDotOrgTasks.new
 require 'cucumber'
 require 'cucumber/rake/task'
 Cucumber::Rake::Task.new(:features) do |t|
-  t.cucumber_opts = %w(features/*.feature --format pretty)
+  t.cucumber_opts = '--format pretty'
 end
 
 desc 'Code coverage detail'

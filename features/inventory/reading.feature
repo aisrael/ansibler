@@ -1,51 +1,51 @@
-Feature: Inventory
-  In order to read and write Ansible inventory files
+Feature: Inventory Reading
+  In order to read Ansible inventory files
 
   Scenario: read a simple inventory file
     Given an Ansible inventory file containing:
       """
-      ip-172-31-6-85
-      ip-172-31-3-134
+      host1
+      host2
       """
     When we read the Ansible inventory file using Ansible::Inventory.read_file
     Then `hosts.count` should be 2
-    And `hosts.first.name` should be "ip-172-31-6-85"
-    And `hosts.last.name` should be "ip-172-31-3-134"
+    And `hosts.first.name` should be "host1"
+    And `hosts.last.name` should be "host2"
 
   Scenario: read an inventory file with host variables
     Given an Ansible inventory file containing:
       """
-      ip-172-31-6-85 ansible_ssh_host=172.31.6.85 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
-      ip-172-31-3-134 ansible_ssh_host=172.31.3.134 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
+      host1 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=private_key.pem
+      host2 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=private_key.pem
       """
     When we read the Ansible inventory file using Ansible::Inventory.read_file
-    And `hosts.first.name` should be "ip-172-31-6-85"
-    And `hosts.first.vars['ansible_ssh_private_key_file']` should be "aws_private_key.pem"
+    And `hosts.first.name` should be "host1"
+    And `hosts.first.vars['ansible_ssh_private_key_file']` should be "private_key.pem"
     And `hosts.last.vars['ansible_ssh_user']` should be "ubuntu"
 
   Scenario: read an inventory file with hosts and groups
     Given an Ansible inventory file containing:
       """
-      ip-172-31-6-85
-      ip-172-31-3-134 ansible_ssh_host=172.31.3.134 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=aws_private_key.pem
+      host1
+      host2 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=private_key.pem
 
       [mysql]
-      ip-172-31-3-134
+      host2
       """
     When we read the Ansible inventory file using Ansible::Inventory.read_file
     Then `groups.count` should be 1
     And the first group's name should be "mysql"
     And the first group should have 1 host
-    And `groups.first.hosts.first.name` should be "ip-172-31-3-134"
+    And `groups.first.hosts.first.name` should be "host2"
     And `groups.first.hosts.first.vars['ansible_ssh_user']` should be "ubuntu"
 
   Scenario: read an inventory file with group variables
     Given an Ansible inventory file containing:
       """
-      ip-172-31-6-85
+      host1
 
       [mysql]
-      ip-172-31-6-85
+      host1
 
       [mysql:vars]
       mysql_root_password=secret
@@ -62,10 +62,10 @@ Feature: Inventory
   Scenario: read an inventory file with group children
     Given an Ansible inventory file containing:
       """
-      ip-172-31-6-85
+      host1
 
       [mysql]
-      ip-172-31-6-85
+      host1
 
       [databases:children]
       mysql
@@ -76,28 +76,3 @@ Feature: Inventory
     And the last group's name should be "databases"
     And `groups['databases'].children.count` should be 1
     And `groups['databases'].children.first` should be "mysql"
-
-  Scenario: write an inventory file using Ansible::Inventory methods
-    Given the following code snippet:
-      """
-      inventory = Ansible::Inventory.new
-      host = inventory.hosts.add 'ip-172-31-3-134', ansible_ssh_host: '172.31.3.134'
-      mysql_group = inventory.groups.add 'mysql'
-      mysql_group.hosts.add host
-      mysql_group.vars['mysql_root_password'] = 'secret'
-      inventory.groups.add('databases').children << 'mysql'
-      inventory.write_file('ansible_inventory')
-      """
-    Then the file "ansible_inventory" should contain:
-      """
-      ip-172-31-3-134 ansible_ssh_host=172.31.3.134
-
-      [mysql]
-      ip-172-31-3-134
-
-      [mysql:vars]
-      mysql_root_password=secret
-
-      [databases:children]
-      mysql
-      """
