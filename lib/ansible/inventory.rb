@@ -1,3 +1,5 @@
+require 'active_support/all'
+
 module Ansible
 
   class Inventory
@@ -28,10 +30,10 @@ module Ansible
               child_group = inventory.groups[host_name] || inventory.groups.add(host_name)
               last_group.children << child_group.name
             elsif in_vars && host_name.index('=') && rest.empty?
-              k, v = host_name.split('=')
+              k, v = host_name.split('=', 2)
               last_group.vars[k] = v
             else
-              vars = Hash[rest.map {|s| s.split('=')}]
+              vars = ActiveSupport::HashWithIndifferentAccess[rest.map {|s| s.split('=', 2)}]
               if last_group
                 host = inventory.hosts.find {|h| h.name == host_name} || Host.new(host_name, vars)
                 last_group.hosts << host
@@ -39,8 +41,6 @@ module Ansible
                 inventory.hosts.add host_name, vars
               end
             end
-          else
-            puts line
           end
         end
         inventory
@@ -89,9 +89,12 @@ module Ansible
     end
 
     class Host < Struct.new :name, :vars
-      def initialize(*args)
-        super
-        self.vars = {} unless vars
+      def initialize(name, hash = {})
+        super(name)
+        self.vars = ActiveSupport::HashWithIndifferentAccess.new(hash)
+      end
+      def ==(other)
+        (name == other.name) && (vars == other.vars)
       end
       class Collection < Array
         def add(*args)
@@ -100,8 +103,16 @@ module Ansible
           else
             Host.new(*args)
           end
-          self << host
-          host
+          # prevent dups
+          if existing = self.find {|h| h == host}
+            existing
+          else
+            self << host
+            host
+          end
+        end
+        def [](name)
+          find {|host| host.name == name}
         end
       end
     end
@@ -110,7 +121,7 @@ module Ansible
       def initialize(*args)
         super
         self.hosts = Host::Collection.new unless hosts
-        self.vars = {} unless vars
+        self.vars = ActiveSupport::HashWithIndifferentAccess.new(vars)
         self.children = []
       end
       class Collection < Array
