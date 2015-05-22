@@ -27,3 +27,12 @@ Feature: Inventory Writing
       [databases:children]
       mysql
       """
+
+  Scenario: prevent adding the same host twice, even with vars
+    Given the following code snippet:
+      """ruby
+      @ansible_inventory = Ansible::Inventory.new
+      @ansible_inventory.hosts.add 'host1', ansible_ssh_host: '172.31.3.134', ansible_ssh_user: 'ubuntu'
+      @ansible_inventory.hosts.add 'host1', ansible_ssh_user: 'ubuntu', ansible_ssh_host: '172.31.3.134'
+      """
+    Then there should be 1 host
