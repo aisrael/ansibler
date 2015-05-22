@@ -15,15 +15,19 @@ Then(/^`(\S+)` should be (\d+)$/) do |something, value|
   expect(actual).to eq(expected)
 end
 
-Then(/^`(\S+)` should be "(\S+)"$/) do |something, expected|
+Then(/^there should be (\d+) (\S+)$/) do |value, something|
+  step "`#{something.pluralize}.count` should be #{value}"
+end
+
+Then(/^`(\S+)` should be `"(\S+)"`$/) do |something, expected|
   # Yes, eval.
   actual = eval("@ansible_inventory.#{something}")
   expect(actual).to eq(expected)
 end
 
-Then(/^the (first|last) (\S+)'s (\S+) should be "([^"]*)"$/) do |first_or_last, collection, attribute, expected|
+Then(/^the (first|last) (\S+)'s (\S+) should be `"([^"]*)"`$/) do |first_or_last, collection, attribute, expected|
   steps %Q{
-    Then `#{collection}s.#{first_or_last}.#{attribute}` should be \"#{expected}\"
+    Then `#{collection}s.#{first_or_last}.#{attribute}` should be `\"#{expected}\"`
   }
 end
 

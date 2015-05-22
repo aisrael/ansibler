@@ -1,1 +1,3 @@
-- inventory.feature
+- inventory:
+  - reading.feature
+  - writing.feature

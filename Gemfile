@@ -15,7 +15,7 @@ group :development do
   gem 'aruba', '0.6.2'
 
   # Code coverage using simplecov
-  gem 'simplecov', '>= 0'
+  gem 'simplecov', '>= 0', require: false
 
   # Code style checking
   gem 'rubocop'
