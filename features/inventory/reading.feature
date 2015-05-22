@@ -10,8 +10,8 @@ Feature: Inventory Reading
       """
     When we read the Ansible inventory file using Ansible::Inventory.read_file
     Then there should be 2 hosts
-    And `hosts.first.name` should be `"host1"`
-    And `hosts.last.name` should be `"host2"`
+    And the first host's name should be `"host1"`
+    And the last host's name should be `"host2"`
 
   Scenario: read an inventory file with host variables
     Given an Ansible inventory file containing:
@@ -20,7 +20,7 @@ Feature: Inventory Reading
       host2 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=private_key.pem
       """
     When we read the Ansible inventory file using Ansible::Inventory.read_file
-    And `hosts.first.name` should be `"host1"`
+    And the first host's name should be `"host1"`
     And `hosts.first.vars['ansible_ssh_private_key_file']` should be `"private_key.pem"`
     And `hosts.last.vars['ansible_ssh_user']` should be `"ubuntu"`
 
