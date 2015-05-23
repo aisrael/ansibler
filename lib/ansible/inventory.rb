@@ -2,9 +2,20 @@ require 'active_support/all'
 
 module Ansible
 
+  # An {Inventory} models an Ansible host inventory and can read & write from Ansible host inventory files.
+  #
+  # @author Alistair A. Israel
+  # @since 0.1
+  # @attr_reader [Host::Collection] hosts the collection of 'global' hosts
+  # @attr_reader [Group::Collection] groups the groups in this inventory
   class Inventory
 
     class << self
+
+      # Read and parse a file
+      #
+      # @param file [String, File] the file to read
+      # @return [Inventory] the inventory file as an object
       def read_file(file)
         inventory = Inventory.new
         last_group = nil
@@ -47,6 +58,13 @@ module Ansible
       end
     end
 
+    # Write the inventory to a file
+    #
+    # @param file [String, File] the file to write then inventory to
+    # @return [void]
+    #
+    # @example Write to a file named `aws_hosts`
+    #   inventory.write_file("aws_hosts")
     def write_file(file)
       File.open(file, 'w') do |f|
         hosts.each {|host|
@@ -80,7 +98,9 @@ module Ansible
       end
     end
 
+    # @return [Host::Collection] this inventory's 'global' hosts
     attr_reader :hosts
+    # @return [Group::Collection] this inventory's groups
     attr_reader :groups
 
     def initialize
@@ -88,10 +108,20 @@ module Ansible
       @groups = Group::Collection.new
     end
 
-    class Host < Struct.new :name, :vars
+    # An Ansible inventory host entry
+    # @since 0.1
+    # @attr [String] name the host name
+    # @attr_reader [ActiveSupport::HashWithIndifferentAccess] vars the host variables
+    class Host
+      # @return [String] the host name
+      attr :name
+      # @return [ActiveSupport::HashWithIndifferentAccess] the host variables
+      attr_reader :vars
+
       def initialize(name, hash = {})
-        super(name)
-        self.vars = ActiveSupport::HashWithIndifferentAccess.new(hash)
+        raise 'Host name cannot be nil or empty' if name.blank?
+        @name = name
+        @vars = ActiveSupport::HashWithIndifferentAccess.new(hash)
       end
       def ==(other)
         (name == other.name) && (vars == other.vars)
@@ -144,12 +174,6 @@ module Ansible
       end
     end
 
-    def with_all_groups(&block)
-      groups.each do |group|
-        yield group
-      end
-    end
-
     private
 
     class InventoryHostCollection < Host::Collection
@@ -158,7 +182,7 @@ module Ansible
       end
       def remove_with_globals(host_or_name)
         if host = remove_without_globals(host_or_name)
-          @inventory.with_all_groups do |group|
+          @inventory.groups.each do |group|
             group.hosts.remove host.name
           end
         end
