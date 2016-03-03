@@ -28,6 +28,43 @@ Feature: Inventory Writing
       mysql
       """
 
+  Scenario: write an inventory file using Ansible::Inventory DSL
+    Given the following code snippet:
+      """ruby
+      Ansible::Inventory.new {
+        host1 ansible_ssh_host: '172.31.3.134'
+
+        group 'mysql' {
+          host1
+          host2 ansible_ssh_host: '172.31.3.16', master_ip: host1.ansible_ssh_host
+          host3 master_ip: host1.ansible_ssh_host
+          mysql_root_password = 'secret'
+        }
+
+        group 'osds' {
+          ip-1-2-3-4 colocated_devices: ('a'..'f').map {|s| "/dev/sd" + s}
+        }
+
+        group 'databases' {
+          children %w(mysql)
+        }
+      }.write_file('ansible_inventory')
+      """
+    Then the file "ansible_inventory" should contain:
+      """ini
+      host1 ansible_ssh_host=172.31.3.134
+
+      [mysql]
+      host1
+      host2 ansible_ssh_host=172.31.3.16
+
+      [mysql:vars]
+      mysql_root_password=secret
+
+      [databases:children]
+      mysql
+      """
+
   Scenario: prevent adding the same host twice, even with vars
     Given the following code snippet:
       """ruby
